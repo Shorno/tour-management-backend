@@ -1,28 +1,14 @@
 import express, {Application, Request, Response} from "express";
-import {connectToMongoDB} from "./config/mongoose";
+import {isMongoConnected} from "./config/mongoose";
 import {env} from "./config/env";
 
 const app : Application = express()
 
-
-
-app.use(async (req, res, next) => {
-    try {
-        await connectToMongoDB()
-        next()
-    } catch (error:any) {
-        console.error("Database connection error:", error)
-        res.status(500).json({
-            success: false,
-            message: "Database connection failed",
-            error: process.env.NODE_ENV === "development" ? error.message : "Internal server error",
-        })
-    }
-})
-
 app.get("/health", (req: Request, res: Response) => {
+    const dbStatus = isMongoConnected()
     const response = {
         success: true,
+        database: dbStatus ? "connected" : "disconnected",
         message: "Server is healthy",
         timestamp: new Date().toISOString(),
         data: {
@@ -46,7 +32,7 @@ app.get(["/", "/api"], (req: Request, res: Response) => {
         timestamp: new Date().toISOString(),
         data: {
             version: "1.0.0",
-            environment: process.env.NODE_ENV || "development",
+            environment: env.NODE_ENV,
             baseUrl,
             endpoints: {
                 health: `${baseUrl}/health`,

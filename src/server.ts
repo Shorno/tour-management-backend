@@ -1,9 +1,13 @@
 import app from "./app";
-import {disconnectFromMongoDB} from "./config/mongoose";
+import {connectToMongoDB, disconnectFromMongoDB} from "./config/mongoose";
 import {env} from "./config/env";
 
 async function bootstrap() {
     try {
+
+        await connectToMongoDB()
+        console.log("✅ Database connected")
+
         if (process.env.VERCEL) {
             return app;
         }
