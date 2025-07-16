@@ -1,8 +1,15 @@
 import express, {Application, Request, Response} from "express";
-import {isMongoConnected} from "./config/mongoose";
-import {env} from "./config/env";
+import cors from "cors"
+import {isMongoConnected} from "./utils/mongoose";
+import {env} from "./utils/env";
+import {router} from "./routes";
+import {globalErrorHandler} from "./middlewares/globalErrorHandler";
+import {notFound} from "./middlewares/notFound";
 
-const app : Application = express()
+const app: Application = express()
+
+app.use(express.json())
+app.use(cors())
 
 app.get("/health", (req: Request, res: Response) => {
     const dbStatus = isMongoConnected()
@@ -21,6 +28,7 @@ app.get("/health", (req: Request, res: Response) => {
     res.status(200).json(response)
 })
 
+app.use("/api/v1/", router)
 
 
 app.get(["/", "/api"], (req: Request, res: Response) => {
@@ -42,8 +50,6 @@ app.get(["/", "/api"], (req: Request, res: Response) => {
                     create: `POST ${baseUrl}/api/users`,
                     update: `PUT ${baseUrl}/api/users/:id`,
                     delete: `DELETE ${baseUrl}/api/users/:id`,
-                    stats: `GET ${baseUrl}/api/users/stats`,
-                    bulk: `POST ${baseUrl}/api/users/bulk`,
                 },
                 products: {
                     getAll: `GET ${baseUrl}/api/products`,
@@ -59,5 +65,9 @@ app.get(["/", "/api"], (req: Request, res: Response) => {
     }
     res.status(200).json(response)
 })
+
+app.use(globalErrorHandler)
+
+app.use(notFound)
 
 export default app;

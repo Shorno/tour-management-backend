@@ -1,6 +1,6 @@
 import app from "./app";
-import {connectToMongoDB, disconnectFromMongoDB} from "./config/mongoose";
-import {env} from "./config/env";
+import {connectToMongoDB, disconnectFromMongoDB} from "./utils/mongoose";
+import {env} from "./utils/env";
 
 async function bootstrap() {
     try {
