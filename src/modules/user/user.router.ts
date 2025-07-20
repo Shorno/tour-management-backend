@@ -9,7 +9,7 @@ import {Role} from "./user.interface";
 const router = Router()
 
 
-router.get("/", checkAuth(Role.USER), getAllUsers)
+router.get("/", checkAuth(Role.ADMIN), getAllUsers)
 
 router.post("/register",
     validateRequest(createUserZodSchema),

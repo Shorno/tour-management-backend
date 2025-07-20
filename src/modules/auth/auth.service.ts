@@ -3,8 +3,8 @@ import {User} from "../user/user.model";
 import httpStatus from "http-status-codes";
 import AppError from "../../errorHelpers/AppError";
 import bcrypt from "bcryptjs";
-import {generateToken} from "../../utils/jwt";
-import {env} from "../../utils/env";
+import {createNewAccessTokenWithRefreshToken, createUserTokens} from "../../utils/userToken";
+
 
 export const credentialsLoginService = async (payload: Partial<IUser>) => {
     const {email, password} = payload;
@@ -13,7 +13,7 @@ export const credentialsLoginService = async (payload: Partial<IUser>) => {
         throw new AppError(httpStatus.BAD_REQUEST, 'Email and password are required fields.');
     }
 
-    const existingUser = await User.findOne({email});
+    const existingUser = await User.findOne({email}).select('+password');
 
     if (!existingUser) {
         throw new AppError(httpStatus.BAD_REQUEST, 'User does not exist with this email address.');
@@ -29,19 +29,23 @@ export const credentialsLoginService = async (payload: Partial<IUser>) => {
         throw new AppError(httpStatus.UNAUTHORIZED, 'Invalid credentials. Please try again.');
     }
 
-    const jwtPayload = {
-        email: existingUser.email,
-        id: existingUser._id,
-        role: existingUser.role
-    }
+    const userObject = existingUser.toObject();
+    delete userObject.password;
 
-    const accessToken = generateToken(jwtPayload, env.JWT_SECRET, env.JWT_EXPIRES_IN);
-
+    const userTokens = createUserTokens(existingUser)
 
     return {
-        email: existingUser.email,
-        accessToken,
+        user: userObject,
+        accessToken: userTokens.accessToken,
+        refreshToken: userTokens.refreshToken
     }
+}
 
 
+export const getNewAccessTokenService = async (refreshToken: string) => {
+    const newAccessToken = await createNewAccessTokenWithRefreshToken(refreshToken);
+
+    return {
+        accessToken: newAccessToken
+    }
 }

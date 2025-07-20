@@ -5,10 +5,12 @@ import {env} from "./utils/env";
 import {router} from "./routes";
 import {globalErrorHandler} from "./middlewares/globalErrorHandler";
 import {notFound} from "./middlewares/notFound";
+import cookieParser from "cookie-parser";
 
 const app: Application = express()
 
 app.use(express.json())
+app.use(cookieParser())
 app.use(cors())
 
 app.get("/health", (req: Request, res: Response) => {

@@ -20,7 +20,7 @@ export const createUser = catchAsync(async (req: Request, res: Response, next: N
 export const getAllUsers = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const result = await getAllUsersService();
     sendResponse(res, {
-        statusCode: httpStatus.CREATED,
+        statusCode: httpStatus.OK,
         success: true,
         message: 'Users fetched successfully',
         data: result.data,
