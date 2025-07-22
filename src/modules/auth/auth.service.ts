@@ -4,6 +4,7 @@ import httpStatus from "http-status-codes";
 import AppError from "../../errorHelpers/AppError";
 import bcrypt from "bcryptjs";
 import {createNewAccessTokenWithRefreshToken, createUserTokens} from "../../utils/userToken";
+import {JwtPayload} from "jsonwebtoken";
 
 
 export const credentialsLoginService = async (payload: Partial<IUser>) => {
@@ -49,3 +50,25 @@ export const getNewAccessTokenService = async (refreshToken: string) => {
         accessToken: newAccessToken
     }
 }
+
+export const resetPasswordService = async (oldPassword: string, newPassword: string, decodedToken: JwtPayload) => {
+
+    const user = await User.findById(decodedToken.id);
+
+    if (!user) {
+        throw new AppError(httpStatus.NOT_FOUND, 'User not found.');
+    }
+
+
+    const isValidPassword = await bcrypt.compare(oldPassword, user?.password as string);
+
+
+    if (!isValidPassword) {
+        throw new AppError(httpStatus.UNAUTHORIZED, 'Old password is incorrect.');
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+}
+
+

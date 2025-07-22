@@ -32,7 +32,7 @@ export const createNewAccessTokenWithRefreshToken = async (refreshToken : string
     const existingUser = await User.findById(decoded.id);
 
     if (!existingUser) {
-        throw new AppError(httpStatus.UNAUTHORIZED, 'User not found.');
+        throw new AppError(httpStatus.NOT_FOUND, 'User not found.');
     }
 
     const jwtPayload = {

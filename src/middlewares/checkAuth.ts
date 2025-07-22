@@ -3,6 +3,7 @@ import AppError from "../errorHelpers/AppError";
 import httpStatus from "http-status-codes";
 import {verifyToken} from "../utils/jwt";
 import {env} from "../utils/env";
+import {User} from "../modules/user/user.model";
 
 export const checkAuth = (...authRoles: string[]) => async (req: Request, res: Response, next: NextFunction) => {
     const accessToken = req.headers.authorization;
@@ -16,6 +17,13 @@ export const checkAuth = (...authRoles: string[]) => async (req: Request, res: R
     }
 
     const verifiedToken = verifyToken(accessToken, env.JWT_SECRET);
+
+    const existingUser = await User.findOne({email: verifiedToken.email})
+
+    if (!existingUser) {
+        throw new AppError(httpStatus.NOT_FOUND, 'User not found.');
+    }
+
 
     req.user = verifiedToken;
 
